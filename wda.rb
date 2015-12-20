@@ -62,6 +62,11 @@ class UpdateHostTemplates
 		  :hosts_id => [zbx.hosts.get_id(:host => @hostname)],
 		  :templates_id => [100100000010962 , 100100000010003 , 100100000010099]
 		)
+		zbx.screens.get_or_create_for_host(
+		  :hosts_id => [zbx.hosts.get_id(:host => @hostname)],
+  		  :screen_name => @hostname,
+  		  :graphids => zbx.graphs.get_ids_by_host(:host => @hostname )
+		)
 	end
 end
 
