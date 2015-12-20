@@ -16,13 +16,14 @@ $name = ARGV[2]
 $email = ARGV[3]
 $activeif = ARGV[4]
 $ip = ARGV[5]
+$wd_hh = 'https://'+ $wd_host + '/wd/index.html'
 
 class WatchDog
 	def wddel(hostname)
 		@hostname = hostname
 		agent = Mechanize.new
-		agent.add_auth('https://' + $wd_host + '/wd/index.html' , $wd_api_login, $wd_api_pass)
-		page = agent.get $wd_host
+		agent.add_auth($wd_hh , $wd_api_login, $wd_api_pass)
+		page = agent.get $wd_hh
 		form = page.forms.last
 		form.field_with(:name => 'host' ).value = @hostname
 		page = agent.submit form
@@ -36,8 +37,8 @@ class WatchDog
 		@activeif = activeif
 		@ip = ip
 		agent = Mechanize.new
-		agent.add_auth($wd_host + '/wd/index.html' , $wd_api_login, $wd_api_pass)
-		page = agent.get $wd_host
+		agent.add_auth($wd_hh, $wd_api_login, $wd_api_pass)
+		page = agent.get $wd_hh
 		form = page.forms.first
 		form.field_with(:name => 'user' ).value = @name
 		form.field_with(:name => 'host' ).value = @hostname
