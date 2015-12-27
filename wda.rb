@@ -10,7 +10,7 @@ $wd_api_pass = ''
 $wd_admin_login = ''
 $wd_admin_pass = ''
 
-type = ARGV[0]
+$type = ARGV[0]
 $host = ARGV[1]
 $name = ARGV[2]
 $email = ARGV[3]
