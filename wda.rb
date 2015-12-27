@@ -64,8 +64,9 @@ class WatchDog
  		zbx.screens.delete(
  			$idscreen["screenid"]	
 		)
-
-		iface = "Traffic " + $activeif
+		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
+		
+		iface = "Traffic " + @activeif
 		$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
 		$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
 		$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
