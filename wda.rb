@@ -20,15 +20,28 @@ $wd_hh = 'https://'+ $wd_host + '/wd/index.html'
 
 class WatchDog
 	def wddel(hostname)
-		puts "Delete host from zabbix..."
+		
 		@hostname = hostname
-		agent = Mechanize.new
-		agent.add_auth($wd_hh , $wd_api_login, $wd_api_pass)
-		page = agent.get $wd_hh
-		form = page.forms.last
-		form.field_with(:name => 'host' ).value = @hostname
-		page = agent.submit form
-		puts page.body.gsub("<p>", "")
+		
+		zbx = ZabbixApi.connect(
+			:url => 'https://' + $wd_host + '/api_jsonrpc.php',
+			:user => $wd_admin_login ,
+			:password => $wd_admin_pass
+		)
+		begin
+			zbx.hosts.delete zbx.hosts.get_id(:host => @hostname )
+		rescue 
+			puts "unknown host with hostname " + @hostname  	
+  		else
+  			$idscreenfordel = zbx.screens.get(
+ 			:name => @hostname
+ 			)
+ 			$idscreenfordel = Hash[*$idscreenfordel]
+ 			zbx.screens.delete(
+ 			$idscreenfordel["screenid"]	
+			)
+  			puts "host with hostname " + @hostname + " deleted"	
+    		end
 	end
 
 	def wdadd(hostname , name , email , activeif , ip)
