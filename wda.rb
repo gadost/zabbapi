@@ -20,6 +20,7 @@ $wd_hh = 'https://'+ $wd_host + '/wd/index.html'
 
 class WatchDog
 	def wddel(hostname)
+		puts "Delete host from zabbix..."
 		@hostname = hostname
 		agent = Mechanize.new
 		agent.add_auth($wd_hh , $wd_api_login, $wd_api_pass)
@@ -36,6 +37,9 @@ class WatchDog
 		@email = email
 		@activeif = activeif
 		@ip = ip
+		
+		puts "Add host to zabbix..."
+		
 		agent = Mechanize.new
 		agent.add_auth($wd_hh, $wd_api_login, $wd_api_pass)
 		page = agent.get $wd_hh
@@ -47,7 +51,9 @@ class WatchDog
 		form.field_with(:name => 'ip' ).value = @ip
 		page = agent.submit form
 		puts page.body.gsub("<p>", "")
-
+		
+		puts "Update host templates..."
+		
 		zbx = ZabbixApi.connect(
 			:url => 'https://' + $wd_host + '/api_jsonrpc.php',
 			:user => $wd_admin_login ,
@@ -64,7 +70,12 @@ class WatchDog
  		zbx.screens.delete(
  			$idscreen["screenid"]	
 		)
+		
+		puts "Add host to group..."
+		
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
+		
+		puts "Update screen graphs..."
 		
 		iface = "Traffic " + @activeif
 		$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
@@ -91,6 +102,7 @@ class WatchDog
 	  		:valign => 0,
 	  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] , $graphtoscreen5[0] , $graphtoscreen6[0] ]
 		)
+		puts "Done!"
 	end
 end
 
