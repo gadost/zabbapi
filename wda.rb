@@ -124,6 +124,7 @@ class WatchDog
 			)
 		rescue
 			puts "Host exist or got error!"
+			abort "please del #{@hostname} first."
 		else
 			puts "Added host #{@hostname} to #{@name} !"
 		end
