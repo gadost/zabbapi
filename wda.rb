@@ -5,8 +5,6 @@ require 'openssl'
 require "zabbixapi"
 
 $wd_host = ''
-$wd_api_login = ''
-$wd_api_pass = ''
 $wd_admin_login = ''
 $wd_admin_pass = ''
 
@@ -16,13 +14,12 @@ $name = ARGV[2]
 $email = ARGV[3]
 $activeif = ARGV[4]
 $ip = ARGV[5]
-$wd_hh = 'https://'+ $wd_host + '/wd/index.html'
 
 class WatchDog
+
 	def wddel(hostname)
-		
+
 		@hostname = hostname
-		
 		zbx = ZabbixApi.connect(
 			:url => 'https://' + $wd_host + '/api_jsonrpc.php',
 			:user => $wd_admin_login ,
@@ -33,14 +30,19 @@ class WatchDog
 		rescue 
 			puts "unknown host with hostname " + @hostname  	
   		else
-  			$idscreenfordel = zbx.screens.get(
- 			:name => @hostname
- 			)
- 			$idscreenfordel = Hash[*$idscreenfordel]
- 			zbx.screens.delete(
- 			$idscreenfordel["screenid"]	
-			)
-  			puts "host with hostname " + @hostname + " deleted"	
+  			begin
+	  			$idscreenfordel = zbx.screens.get(
+	 			:name => @hostname
+	 			)
+	 			$idscreenfordel = Hash[*$idscreenfordel]
+	 			zbx.screens.delete(
+	 			$idscreenfordel["screenid"]	
+				)
+			rescue
+  				puts "host with hostname " + @hostname + " deleted"	
+  			else
+  				puts "host with hostname " + @hostname + " deleted"	
+  			end
     		end
 	end
 
@@ -50,40 +52,157 @@ class WatchDog
 		@email = email
 		@activeif = activeif
 		@ip = ip
-		
+		passwd = [*('a'..'z'),*('0'..'9')].sample(12).join
+
 		puts "Add host to zabbix..."
-		
-		agent = Mechanize.new
-		agent.add_auth($wd_hh, $wd_api_login, $wd_api_pass)
-		page = agent.get $wd_hh
-		form = page.forms.first
-		form.field_with(:name => 'user' ).value = @name
-		form.field_with(:name => 'host' ).value = @hostname
-		form.field_with(:name => 'email' ).value = @email
-		form.field_with(:name => 'activeif' ).value = @activeif
-		form.field_with(:name => 'ip' ).value = @ip
-		page = agent.submit form
-		puts page.body.gsub("<p>", "")
-		
-		puts "Update host templates..."
-		
 		zbx = ZabbixApi.connect(
 			:url => 'https://' + $wd_host + '/api_jsonrpc.php',
 			:user => $wd_admin_login ,
 			:password => $wd_admin_pass
 		)
+		begin
+			zbx.hostgroups.create(:name => @name)
+		rescue
+			puts "HostGroup exist!"
+		else
+			puts "HostGroup created!"
+		end
+
+		begin
+			zbx.usergroups.get_or_create(:name => @name)
+		rescue
+			puts "UserGroup exist!"
+		else
+			zbx.query(
+				:method => "usergroup.massadd",
+				:params => {
+					:usrgrpids => [zbx.usergroups.get_id(:name => @name)],
+					:rights => [{
+						:groupid => [zbx.usergroups.get_id(:name => @name)],
+						:id => zbx.hostgroups.get_id(:name => $name) ,
+						:permission => 2
+						}]
+				}
+			)
+			puts "UserGroup #{@name} added.."
+		end
+
+		begin
+			zbx.users.create(
+				:alias => $name,
+				:type => 1,
+  				:passwd => passwd,
+  				:usrgrps => [zbx.usergroups.get_id(:name => @name)],
+  	 			:url => '/screens.php'
+			)
+		rescue
+			puts "User exist!"
+		else
+			puts "User created!"
+			puts " "
+			puts "#WDAmhost"
+			puts 'https://' + $wd_host
+			puts "#{@name} / #{passwd}"
+			puts " " 
+		end
+
+		begin
+			zbx.query(:method => "host.create" ,
+				:params => {
+		  			:host => @hostname ,
+		  			:interfaces => {
+		      				:type => 1,
+		      				:main => 1,
+		      				:ip => $ip ,
+		      				:dns => "",
+		      				:useip => 1,
+		      				:port => 10050
+		    			},
+		  			:groups => [{ :groupid => zbx.hostgroups.get_id(:name => @name) }],
+		  			:templates => { :templateid => 100100000010001 }
+				}
+			)
+		rescue
+			puts "Host exist or got error!"
+		else
+			puts "Added host #{@hostname} to #{@name} !"
+		end
+
+		begin
+			getuserid =  zbx.query(
+				:method => "user.get",
+				:params => {
+    				:filter => { "alias":[@name] },
+    				:output => {
+    					:filter => "userid"
+    				}
+				}
+
+			)
+			getuserid = Hash[*getuserid]
+
+			zbx.query(:method => "user.addmedia",
+				:params => {
+	  				:users => { :userid => getuserid["userid"]},
+	  				:medias => [
+	   				{
+	      					:mediatypeid => "100100000000001" ,
+	      					:sendto => @email,
+	      					:active => 0,
+	      					:severity => 48,
+	      					:period => "1-7,00:00-24:00"
+	    				}
+					]
+				}
+			)
+		rescue
+			puts "UserMedia exist!"
+		else
+			puts "UserMedia added to #{@name}"
+		end
+
+		begin
+		zbx.query(
+			:method => "action.create" ,
+			:params => [ {
+				:name => "all #{@name} triggs", 
+				:eventsource => 0 ,
+				:status => 0 ,
+				:evaltype => 0 ,
+				:esc_period => 3600 ,
+				:def_shortdata => '{TRIGGER.NAME}: {STATUS}' ,
+				:def_longdata => '{TRIGGER.NAME}: {STATUS}',
+				:usrgrpid => zbx.usergroups.get_id(:name => @name),
+				:conditions => [
+					{ 
+						:conditiontype => 0 ,
+						:operator => 0 ,
+						:value => zbx.hostgroups.get_id(:name => $name)
+					}
+				],
+				:operations => [
+					{ 
+						:operationtype => 0 ,
+			    		:opmessage_grp => [
+				   		{
+				   			:usrgrpid => zbx.usergroups.get_id(:name => @name)
+			    		}],
+			    		:opmessage => {:default_msg => 1 }
+			    	}
+			    ]
+			}]
+		)
+		rescue
+			puts "Action exist!"
+		end
+
+		puts "Update host templates..."
+
 		zbx.templates.mass_add(
 			:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
 			:templates_id => [100100000010962 , 100100000010003 , 100100000010099]
 		)
-		$idscreen = zbx.screens.get(
- 			:name => @hostname
- 		)
- 		$idscreen = Hash[*$idscreen]
- 		zbx.screens.delete(
- 			$idscreen["screenid"]	
-		)
-		
+
 		puts "Add host to group..."
 		
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
