@@ -97,6 +97,7 @@ class WatchDog
 			)
 		rescue
 			puts "User exist!"
+			puts "host will be added to existed account."
 		else
 			puts "User created!"
 			puts " "
