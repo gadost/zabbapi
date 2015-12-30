@@ -257,7 +257,7 @@ class WatchDog
 		  		:screen_name => @hostname,
 		  		:height => 180,
 		  		:width => 360,
-		  		:vsize => 3,
+		  		:vsize => 2,
 		  		:hsize => 2,
 		  		:halign => 0,
 		  		:valign => 0,
