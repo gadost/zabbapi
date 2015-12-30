@@ -43,7 +43,7 @@ class WatchDog
   			else
   				puts "host with hostname " + @hostname + " deleted"	
   			end
-    		end
+    	end
 	end
 
 	def wdadd(hostname , name , email , activeif , ip)
@@ -97,7 +97,6 @@ class WatchDog
 			)
 		rescue
 			puts "User exist!"
-			puts "host will be added to existed account."
 		else
 			puts "User created!"
 			puts " "
@@ -216,32 +215,59 @@ class WatchDog
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
 		
 		puts "Update screen graphs..."
-		
-		iface = "Traffic " + @activeif
-		$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
-		$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
-		$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
-		$graphtoscreen4 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "MySQL\ queries")
-		$graphtoscreen5 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Processes")
-		$graphtoscreen6 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Memory")
-		$graphtoscreen1 = $graphtoscreen1.map(&:to_i)
-		$graphtoscreen2 = $graphtoscreen2.map(&:to_i)
-		$graphtoscreen3 = $graphtoscreen3.map(&:to_i)
-		$graphtoscreen4 = $graphtoscreen4.map(&:to_i)
-		$graphtoscreen5 = $graphtoscreen5.map(&:to_i)
-		$graphtoscreen6 = $graphtoscreen6.map(&:to_i)
+		begin
+			iface = "Traffic " + @activeif
+			$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
+			$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
+			$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
+			$graphtoscreen4 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "MySQL\ queries")
+			$graphtoscreen5 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Processes")
+			$graphtoscreen6 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Memory")
+			$graphtoscreen1 = $graphtoscreen1.map(&:to_i)
+			$graphtoscreen2 = $graphtoscreen2.map(&:to_i)
+			$graphtoscreen3 = $graphtoscreen3.map(&:to_i)
+			$graphtoscreen4 = $graphtoscreen4.map(&:to_i)
+			$graphtoscreen5 = $graphtoscreen5.map(&:to_i)
+			$graphtoscreen6 = $graphtoscreen6.map(&:to_i)
 
-		zbx.screens.get_or_create_for_host(
-			:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
-	  		:screen_name => @hostname,
-	  		:height => 180,
-	  		:width => 360,
-	  		:vsize => 3,
-	  		:hsize => 2,
-	  		:halign => 0,
-	  		:valign => 0,
-	  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] , $graphtoscreen5[0] , $graphtoscreen6[0] ]
-		)
+			zbx.screens.get_or_create_for_host(
+				:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
+		  		:screen_name => @hostname,
+		  		:height => 180,
+		  		:width => 360,
+		  		:vsize => 3,
+		  		:hsize => 2,
+		  		:halign => 0,
+		  		:valign => 0,
+		  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] , $graphtoscreen5[0] , $graphtoscreen6[0] ]
+			)
+		rescue
+			iface = "Traffic " + @activeif
+			$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
+			$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
+			$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
+			$graphtoscreen4 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "MySQL\ queries")
+			$graphtoscreen5 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Processes")
+			$graphtoscreen6 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Memory")
+			$graphtoscreen1 = $graphtoscreen1.map(&:to_i)
+			$graphtoscreen2 = $graphtoscreen2.map(&:to_i)
+			$graphtoscreen3 = $graphtoscreen3.map(&:to_i)
+			$graphtoscreen4 = $graphtoscreen4.map(&:to_i)
+			$graphtoscreen5 = $graphtoscreen5.map(&:to_i)
+			$graphtoscreen6 = $graphtoscreen6.map(&:to_i)
+
+			zbx.screens.get_or_create_for_host(
+				:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
+		  		:screen_name => @hostname,
+		  		:height => 180,
+		  		:width => 360,
+		  		:vsize => 3,
+		  		:hsize => 2,
+		  		:halign => 0,
+		  		:valign => 0,
+		  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] , $graphtoscreen5[0] , $graphtoscreen6[0] ]
+			)
+		end
 		puts "Done!"
 	end
 end
