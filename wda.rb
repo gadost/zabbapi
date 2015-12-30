@@ -107,6 +107,12 @@ class WatchDog
 			puts " " 
 		end
 
+		if $host.chars.first == 'l'
+			$tplid = '100100000010001'
+		else
+			$tplid = '100100000010008'
+		end
+
 		begin
 			zbx.query(:method => "host.create" ,
 				:params => {
@@ -120,7 +126,7 @@ class WatchDog
 		      				:port => 10050
 		    			},
 		  			:groups => [{ :groupid => zbx.hostgroups.get_id(:name => @name) }],
-		  			:templates => { :templateid => 100100000010001 }
+		  			:templates => { :templateid => $tplid }
 				}
 			)
 		rescue
