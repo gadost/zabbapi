@@ -247,14 +247,10 @@ class WatchDog
 			$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
 			$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
 			$graphtoscreen4 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "MySQL\ queries")
-			$graphtoscreen5 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Processes")
-			$graphtoscreen6 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Memory")
 			$graphtoscreen1 = $graphtoscreen1.map(&:to_i)
 			$graphtoscreen2 = $graphtoscreen2.map(&:to_i)
 			$graphtoscreen3 = $graphtoscreen3.map(&:to_i)
 			$graphtoscreen4 = $graphtoscreen4.map(&:to_i)
-			$graphtoscreen5 = $graphtoscreen5.map(&:to_i)
-			$graphtoscreen6 = $graphtoscreen6.map(&:to_i)
 
 			zbx.screens.get_or_create_for_host(
 				:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
@@ -265,7 +261,7 @@ class WatchDog
 		  		:hsize => 2,
 		  		:halign => 0,
 		  		:valign => 0,
-		  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] , $graphtoscreen5[0] , $graphtoscreen6[0] ]
+		  		:graphids => [ $graphtoscreen1[0] , $graphtoscreen2[0] , $graphtoscreen3[0] , $graphtoscreen4[0] ]
 			)
 		end
 		puts "Done!"
