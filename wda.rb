@@ -138,12 +138,12 @@ class WatchDog
 		begin
 			getuserid =  zbx.query(
 				:method => "user.get",
-				:params => [
-    					:filter => { :alias => [@name] },
+				:params => {
+    					:filter => { :alias => ["#{@name}"] },
     					:output => {
     						:filter => "userid"
     					}
-				]
+				}
 
 			)
 
