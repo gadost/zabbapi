@@ -138,14 +138,15 @@ class WatchDog
 		begin
 			getuserid =  zbx.query(
 				:method => "user.get",
-				:params => {
-    				:filter => { "alias":[@name] },
-    				:output => {
-    					:filter => "userid"
-    				}
-				}
+				:params => [
+    					:filter => { :alias => [@name] },
+    					:output => {
+    						:filter => "userid"
+    					}
+				]
 
 			)
+
 			getuserid = Hash[*getuserid]
 
 			zbx.query(:method => "user.addmedia",
