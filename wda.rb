@@ -108,8 +108,10 @@ class WatchDog
 
 		if $host.chars.first == 'l'
 			$tplid = '100100000010001'
-		else
+		elsif $host.chars.first == 'f'
 			$tplid = '100100000010008'
+		else
+			$tplid = '100100000010001'
 		end
 
 		begin
