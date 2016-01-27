@@ -103,7 +103,43 @@ class WatchDog
 			puts "#WDAmhost"
 			puts 'https://' + $wd_host
 			puts "#{@name} / #{passwd}"
-			puts " " 
+			puts " "
+			
+			begin
+				getuserid =  zbx.query(
+					:method => "user.get",
+					:params => {
+    						:filter => { :alias => ["#{@name}"] },
+    						:output => {
+    							:filter => "userid"
+    						}
+					}
+
+				)
+
+				getuserid = Hash[*getuserid]
+
+				zbx.query(:method => "user.addmedia",
+					:params => {
+	  					:users => { :userid => getuserid["userid"]},
+	  					:medias => [
+	   					{
+	      						:mediatypeid => "100100000000001" ,
+	      						:sendto => @email,
+	      						:active => 0,
+	      						:severity => 48,
+	      						:period => "1-7,00:00-24:00"
+	    					}
+						]
+					}
+				)
+			rescue
+				puts "UserMedia exist!"
+			else
+				puts "UserMedia added to #{@name}"
+			end
+
+			
 		end
 
 		if $host.chars.first == 'l'
@@ -135,40 +171,6 @@ class WatchDog
 			abort "please del #{@hostname} first."
 		else
 			puts "Added host #{@hostname} to #{@name} !"
-		end
-
-		begin
-			getuserid =  zbx.query(
-				:method => "user.get",
-				:params => {
-    					:filter => { :alias => ["#{@name}"] },
-    					:output => {
-    						:filter => "userid"
-    					}
-				}
-
-			)
-
-			getuserid = Hash[*getuserid]
-
-			zbx.query(:method => "user.addmedia",
-				:params => {
-	  				:users => { :userid => getuserid["userid"]},
-	  				:medias => [
-	   				{
-	      					:mediatypeid => "100100000000001" ,
-	      					:sendto => @email,
-	      					:active => 0,
-	      					:severity => 48,
-	      					:period => "1-7,00:00-24:00"
-	    				}
-					]
-				}
-			)
-		rescue
-			puts "UserMedia exist!"
-		else
-			puts "UserMedia added to #{@name}"
 		end
 
 		begin
@@ -210,16 +212,24 @@ class WatchDog
 
 		zbx.templates.mass_add(
 			:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
-			:templates_id => [100100000010962 , 100100000010003 , 100100000010099]
+			:templates_id => [100100000010962 , 100100000010003 , 100100000010099 , 100100000011805]
 		)
 
 		puts "Add host to group..."
 		
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
-		
-		puts "Update screen graphs..."
 		begin
-			iface = "Traffic " + @activeif
+			puts "Update screen graphs..."
+			IfaceKnow = [ "eth0" , "eth1" , "em1" , "bond0" , "bond1" , "eth2" , "eth3" , "eth4" , "p4p1" ]
+			puts "discovery active interface graph"
+			sleep(40) unless IfaceKnow.include? @activeif
+		rescue
+			abort "Its not error!!!! please wait 5 min , and update host , because new iface not discovered."
+		end
+		begin
+		
+			iface = "Traffic " + @activeif 
+			iface = "Traffic on " + @activeif unless IfaceKnow.include? @activeif
 			$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
 			$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
 			$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
