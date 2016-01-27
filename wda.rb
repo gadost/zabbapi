@@ -220,16 +220,16 @@ class WatchDog
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
 		begin
 			puts "Update screen graphs..."
-			IfaceKnow = [ "eth0" , "eth1" , "em1" , "bond0" , "bond1" , "eth2" , "eth3" , "eth4" , "p4p1" ]
+			ifaceknow = [ "eth0" , "eth1" , "em1" , "bond0" , "bond1" , "eth2" , "eth3" , "eth4" , "p4p1" ]
 			puts "discovery active interface graph"
-			sleep(40) unless IfaceKnow.include? @activeif
+			sleep(66) unless ifaceknow.include? @activeif
 		rescue
 			abort "Its not error!!!! please wait 5 min , and update host , because new iface not discovered."
 		end
 		begin
 		
 			iface = "Traffic " + @activeif 
-			iface = "Traffic on " + @activeif unless IfaceKnow.include? @activeif
+			iface = "Traffic on " + @activeif unless ifaceknow.include? @activeif
 			$graphtoscreen1 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => iface )
 			$graphtoscreen2 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "CPU\ Utilization")
 			$graphtoscreen3 = zbx.graphs.get_ids_by_host(:host => @hostname , :filter => "Load\ Average")
