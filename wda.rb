@@ -1,12 +1,16 @@
 gem 'zabbixapi' , '=2.2.0'
 require 'rubygems'
+require 'json'
 require 'mechanize'
 require 'hpricot'
 require 'openssl'
 require 'zabbixapi'
-$wd_host = ''
-$wd_admin_login = ''
-$wd_admin_pass = ''
+
+file = File.read('./config.json')
+credentials = JSON.parse(file)
+$wd_host = credentials['host']
+$wd_admin_login = credentials['login']
+$wd_admin_pass = credentials['pass']
 
 $type = ARGV[0]
 $host = ARGV[1]
@@ -27,16 +31,16 @@ class WatchDog
 		)
 		begin
 			zbx.hosts.delete zbx.hosts.get_id(:host => @hostname )
-		rescue 
-			puts "unknown host with hostname " + @hostname  	
-  		else
-  			begin
-	  			$idscreenfordel = zbx.screens.get(
-	 			:name => @hostname
-	 			)
-	 			$idscreenfordel = Hash[*$idscreenfordel]
-	 			zbx.screens.delete(
-	 			$idscreenfordel["screenid"]	
+		rescue
+			puts "unknown host with hostname " + @hostname
+		else
+			begin
+				$idscreenfordel = zbx.screens.get(
+					:name => @hostname
+				)
+				$idscreenfordel = Hash[*$idscreenfordel]
+				zbx.screens.delete(
+				$idscreenfordel["screenid"]
 				)
 			rescue
   				puts "host with hostname " + @hostname + " deleted"	
