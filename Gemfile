@@ -1,0 +1,5 @@
+gem 'zabbixapi' , '=2.2.0'
+gem 'json'
+gem 'mechanize'
+gem 'hpricot'
+gem 'openssl'
