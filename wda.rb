@@ -1,9 +1,9 @@
+gem 'zabbixapi' , '=2.2.0'
 require 'rubygems'
 require 'mechanize'
 require 'hpricot'
 require 'openssl'
-require 'zabbixapi' , '=2.2.0'
-
+require 'zabbixapi'
 $wd_host = ''
 $wd_admin_login = ''
 $wd_admin_pass = ''
