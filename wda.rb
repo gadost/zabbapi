@@ -1,4 +1,4 @@
-gem 'zabbixapi' , '=2.2.0'
+gem 'zabbixapi' , '=2.4.2'
 require 'rubygems'
 require 'json'
 require 'mechanize'
