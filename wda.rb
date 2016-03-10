@@ -1,4 +1,4 @@
-gem 'zabbixapi' , '=2.4.2'
+gem 'zabbixapi' , '=2.4.7'
 require 'rubygems'
 require 'json'
 require 'mechanize'
@@ -218,7 +218,12 @@ class WatchDog
 			:hosts_id => [zbx.hosts.get_id(:host => @hostname)],
 			:templates_id => [100100000010962 , 100100000010003 , 100100000010099 , 100100000011805]
 		)
-
+                if $host[2] == "i"
+                        zbx.templates.mass_add(
+                                :hosts_id => [zbx.hosts.get_id(:host => @hostname)],
+                                :templates_id => [200200000010062]
+                        )
+                end
 		puts "Add host to group..."
 		
 		zbx.query(:method => "hostgroup.massadd" , :params => {:groups => {:groupid => "100100000000614"} , :hosts => {:hostid => zbx.hosts.get_id(:host => @hostname)}} )
